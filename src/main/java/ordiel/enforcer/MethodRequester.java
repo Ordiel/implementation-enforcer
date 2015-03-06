@@ -11,7 +11,7 @@ import javax.lang.model.element.Modifier;
 
 import ordiel.enforcer.Types.Void;
 
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Repeatable(RequestedMethods.class)
 @Inherited

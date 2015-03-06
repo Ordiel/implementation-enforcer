@@ -145,31 +145,50 @@ public class ImplementationRequestsValidator extends AbstractProcessor {
 		String identifierFound,
 		requestedType;
 		for (AnnotationMirror am : allElementAnnotationMirrors) {
-			if (!(am.getAnnotationType().toString().equals("ordiel.enforcer.TypeRequester") ||
-					am.getAnnotationType().toString().equals("ordiel.enforcer.RequestedTypes"))) {
-				continue;
-			}
-			for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : am.getElementValues().entrySet()) {
+			if (am.getAnnotationType().toString().equals("ordiel.enforcer.TypeRequester")) {
 				identifierFound = null;
 				requestedType = null;
-				for (com.sun.tools.javac.code.Attribute.Compound compoundAttribute : (List<com.sun.tools.javac.code.Attribute.Compound>) entry.getValue().getValue()) {
-					for (Pair<MethodSymbol, Attribute> attributeData : compoundAttribute.values) {
-						if ("type()".equals(attributeData.fst.toString())) {
-							requestedType = attributeData.snd.toString();
-							requestedType = requestedType.substring(0, requestedType.length() - 6); //Removes the trailing '.class'
+				for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : am.getElementValues().entrySet()) {
+					if ("type()".equals(entry.getKey().toString())) {
+						requestedType = entry.getValue().toString();
+						requestedType = requestedType.substring(0, requestedType.length() - 6); //Removes the trailing '.class'
+					}
+					if ("identifier()".equals(entry.getKey().toString())) {
+						if (!entry.getValue().toString().equals('"'+identifier+'"')) {
+							break; //THIS ANNOTATION MIRROR BELONGS TO ANOTHER TYPE REQUESTER
+						} else {
+							identifierFound = entry.getValue().toString();
 						}
-						if ("identifier()".equals(attributeData.fst.toString())) {
-							if (!attributeData.snd.toString().equals('"'+identifier+'"')) {
-								break; //THIS ANNOTATION MIRROR BELONGS TO ANOTHER TYPE REQUESTER
-							} else {
-								identifierFound = attributeData.snd.toString();
+					}
+					if (requestedType != null && identifierFound != null) {
+						return requestedType.toString();
+					}
+				}
+			} else if (am.getAnnotationType().toString().equals("ordiel.enforcer.RequestedTypes")) {
+				for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : am.getElementValues().entrySet()) {
+					identifierFound = null;
+					requestedType = null;
+					for (com.sun.tools.javac.code.Attribute.Compound compoundAttribute : (List<com.sun.tools.javac.code.Attribute.Compound>) entry.getValue().getValue()) {
+						for (Pair<MethodSymbol, Attribute> attributeData : compoundAttribute.values) {
+							if ("type()".equals(attributeData.fst.toString())) {
+								requestedType = attributeData.snd.toString();
+								requestedType = requestedType.substring(0, requestedType.length() - 6); //Removes the trailing '.class'
 							}
-						}
-						if (requestedType != null && identifierFound != null) {
-							return requestedType.toString();
+							if ("identifier()".equals(attributeData.fst.toString())) {
+								if (!attributeData.snd.toString().equals('"'+identifier+'"')) {
+									break; //THIS ANNOTATION MIRROR BELONGS TO ANOTHER TYPE REQUESTER
+								} else {
+									identifierFound = attributeData.snd.toString();
+								}
+							}
+							if (requestedType != null && identifierFound != null) {
+								return requestedType.toString();
+							}
 						}
 					}
 				}
+			} else {
+				System.out.println("SABE: "+am.getAnnotationType());
 			}
 		}
 		throw new RuntimeException("Something happened!!!..."+" pedi: "+identifier); 
@@ -248,6 +267,7 @@ public class ImplementationRequestsValidator extends AbstractProcessor {
 			return PrimitiveBoolean.class;
 		case "char":
 			return PrimitiveChar.class;
+		case "void":
 		case "ordiel.enforcer.Types.Void": 
 			return Void.class;
 		default:
@@ -301,7 +321,8 @@ public class ImplementationRequestsValidator extends AbstractProcessor {
 								(enclosedElement.asType().toString().equals("float") && requestedType.getCanonicalName().equals(PrimitiveFloat.class.getCanonicalName())) ||
 								(enclosedElement.asType().toString().equals("double") && requestedType.getCanonicalName().equals(PrimitiveDouble.class.getCanonicalName())) ||
 								(enclosedElement.asType().toString().equals("boolean") && requestedType.getCanonicalName().equals(PrimitiveBoolean.class.getCanonicalName())) ||
-								(enclosedElement.asType().toString().equals("char") && requestedType.getCanonicalName().equals(PrimitiveChar.class.getCanonicalName()))) {
+								(enclosedElement.asType().toString().equals("char") && requestedType.getCanonicalName().equals(PrimitiveChar.class.getCanonicalName())) ||
+								(enclosedElement.asType().toString().equals("()void") && requestedType.getCanonicalName().equals(Void.class.getCanonicalName()))) {
 							List<Modifier> modifiersFound = new ArrayList<Modifier>();
 							modifiersFound.addAll(enclosedElement.getModifiers());
 							for (int i = 0; i < requestedModifiers.size(); i++) {
@@ -323,7 +344,7 @@ public class ImplementationRequestsValidator extends AbstractProcessor {
 							}
 						} else {
 							messager.printMessage(Kind.ERROR, 
-									"The field '"+identifier+"' was requested to be of the type '"+requestedType+
+									"The "+validateOver().toString().toLowerCase()+" '"+identifier+"' was requested to be of the type '"+requestedType+
 									"' but instead it is of the type '"+enclosedElement.asType().toString()+"'!!!...", 
 									enclosedElement);
 						}
@@ -332,8 +353,9 @@ public class ImplementationRequestsValidator extends AbstractProcessor {
 				}
 			}
 			if (!found) {
+				//TODO describe parameters of methods
 				messager.printMessage(Kind.ERROR, 
-						"Incompleate implementation!!!...\nA property with the next "
+						"Incompleate implementation!!!...\nA "+validateOver().toString().toLowerCase()+" with the next "
 								+ "specifications is required on order to have a "
 								+ "proper implementation:"
 								+ "\n\tType:"+requestedType
