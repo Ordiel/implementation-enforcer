@@ -13,23 +13,29 @@ Lets suppose that an API developer desires all the subclasses of the class A to 
 
 **Class A:**
 
-	import javax.lang.model.element.Modifier;
-	import ordiel.enforcer.MethodRequester;
-	import ordiel.enforcer.Types.Void;
+```
+#!java
+import javax.lang.model.element.Modifier;
+import ordiel.enforcer.MethodRequester;
+import ordiel.enforcer.Types.Void;
 
-	@MethodRequester(
-		identifier = "aMethod", 
-		type = Void.class, 
-		parametersTypes={}, 
-		parametersIdentifiers = {}, 	
-		requestedModifiers={Modifier.STATIC})
-	public abstract class A {}
+@MethodRequester(
+	identifier = "aMethod", 
+	type = Void.class, 
+	parametersTypes={}, 
+	parametersIdentifiers = {}, 	
+	requestedModifiers={Modifier.STATIC})
+public abstract class A {}
+```
 	
 Then a developer using the provided API would try to create its own implementation of class `A` by inheriting from it and would try to do something like:
 
 **Class B:**
 
-    public class B extends A {}
+```
+#!java
+public class B extends A {}
+```
     
 When trying to compile class `B` the developer is going to receive the next error message: 
 
