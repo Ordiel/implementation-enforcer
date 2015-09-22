@@ -57,3 +57,10 @@ For those who are not quite familiar with the usage of the *cli* for compiling j
 ### 0.0.1
 Functional for both methods and attributes.
 
+--- 
+#Author
+**César Alonso Martínez Sánchez**
+
+<ordiel1910@gmail.com>
+
+[![Facebook](doc/resources/images/social-networks/facebook_35x35.png)](https://www.facebook.com/ordiel) [![Linkedin](doc/resources/images/social-networks/linkedin_35x35.png)](https://www.linkedin.com/pub/césar-alonso-martínez-sánchez/66/734/8b8) [![Google](doc/resources/images/social-networks/google-plus-new_35x35.png)](https://plus.google.com/u/0/+C%C3%A9sarAlonsoMart%C3%ADnezS%C3%A1nchez) [![Twitter](doc/resources/images/social-networks/Twitter_35x35.png)](https://twitter.com/Ordiel1)
